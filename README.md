@@ -10,8 +10,8 @@
 
 - `/short`
 
-!['/short'](https://i.imgur.com/z6kSgo2.png)
+!['fast-url.deta.dev/short'](https://i.imgur.com/z6kSgo2.png)
 
 - `/{shortened_url}`
 
-!['/{shortened_url}'](https://i.imgur.com/CqMwqLV.png)
+!['fast-url.deta.dev/{shortened_url}'](https://i.imgur.com/CqMwqLV.png)

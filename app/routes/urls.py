@@ -1,9 +1,12 @@
 import hashlib
 
-from api import models
-from api.app import app, db_urls
-from fastapi.responses import RedirectResponse
 from fastapi import HTTPException, Request
+from fastapi.responses import RedirectResponse
+
+from app import app
+from app.dependecies import db_urls
+from app.schemas.base import Response
+from app.schemas.url import UrlCreate, UrlResponse
 
 
 async def write_record(url):
@@ -13,16 +16,16 @@ async def write_record(url):
     return hashed
 
 
-@app.get('/ping', response_model=models.Response)
+@app.get('/ping', response_model=Response)
 async def ping():
-    return models.Response(status='ok', message='pong')
+    return Response(status='ok', message='pong')
 
 
-@app.post('/short', response_model=models.UrlResponse)
-async def short_url(url_model: models.UrlCreate, request: Request):
+@app.post('/short', response_model=UrlResponse)
+async def short_url(url_model: UrlCreate, request: Request):
     hashed = await write_record(url_model.url)
-    return models.UrlResponse(
-        message=f'Created tiny url for {url_model}',
+    return UrlResponse(
+        message=f'created tiny url for {url_model}',
         status='ok', url=f'https://{request.url.hostname}/{hashed}'
     )
 

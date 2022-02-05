@@ -1,10 +1,5 @@
-from typing import Optional
+from app.schemas.base import Response
 from pydantic import BaseModel
-
-
-class Response(BaseModel):
-    status: str
-    message: Optional[str]
 
 
 class UrlCreate(BaseModel):

@@ -1,0 +1,1 @@
+{"id":"b6562e5d-cd36-499e-8945-01ab16af0cc1","space":13833,"runtime":"python3.9","name":"url-shortener","path":"yxo4sn","project":"c0t2f6n1","account":"144798365827","region":"ap-southeast-1","deps":["fastapi","deta"],"envs":["PROJECT_KEY"],"public":true,"log_level":"debug","cron":""}

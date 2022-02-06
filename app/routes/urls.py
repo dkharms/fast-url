@@ -10,10 +10,30 @@ from app.dependecies import db_urls
 from app.schemas.base import Response
 from app.schemas.url import UrlCreate, UrlResponse
 
+letter_to_digit = {
+    'a': '4', 'b': '8', 'e': '3',
+    'i': '1', 'j': '9', 'l': '1',
+    'o': '0', 'r': '2', 's': '5',
+    't': '7',
+}
+
+
+async def create_hash(host, url):
+    host_letters = list(host)
+    hash_letters = list(hashlib.md5(url.encode('utf-8')).hexdigest())
+
+    for index, letter in enumerate(host_letters):
+        if letter in hash_letters:
+            hash_letters.remove(letter)
+        elif letter in letter_to_digit and letter_to_digit[letter] in hash_letters:
+            host_letters[index] = letter_to_digit[letter]
+            hash_letters.remove(letter_to_digit[letter])
+
+    return f'{"".join(host_letters)}{"".join(hash_letters[:len(hash_letters) // 4])}'
+
 
 async def write_record(host, url):
-    hashed = hashlib.md5(url.encode('utf-8')).hexdigest()
-    key = f'{host}-{hashed[len(hashed) // 2:]}'
+    key = await create_hash(host, url)
     if not db_urls.get(key):
         db_urls.put(url, key)
 
@@ -40,7 +60,7 @@ async def short_url(url_model: UrlCreate, request: Request):
     key = await write_record(hostname, valid_url)
 
     return UrlResponse(
-        message=f'created tiny url for {url_model}',
+        message='🚀 created tiny url',
         status='ok', url=f'https://{request.url.hostname}/{key}'
     )
 
@@ -49,7 +69,7 @@ async def short_url(url_model: UrlCreate, request: Request):
 async def redirect_to(shortened_url: str):
     full_url = db_urls.get(shortened_url)
     if not full_url:
-        return HTTPException(404, f'{shortened_url} does not exist!')
+        return HTTPException(404, f'🔴 {shortened_url} does not exist!')
     valid_url = await construct_valid_url(full_url['value'])
 
     return RedirectResponse(valid_url)

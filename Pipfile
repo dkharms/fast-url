@@ -7,6 +7,9 @@ name = "pypi"
 fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 deta = "*"
+jinja2 = "*"
+pytest = "*"
+requests = "*"
 
 [dev-packages]
 

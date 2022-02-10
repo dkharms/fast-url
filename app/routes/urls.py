@@ -2,12 +2,11 @@ import hashlib
 
 from urllib.parse import urlparse
 
-from fastapi import HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi import HTTPException, Request, Form
+from fastapi.responses import RedirectResponse, HTMLResponse
 
 from app import app
-from app.dependecies import db_urls
-from app.schemas.base import Response
+from app.dependecies import db_urls, templates
 from app.schemas.url import UrlCreate, UrlResponse
 
 letter_to_digit = {
@@ -48,20 +47,21 @@ async def construct_valid_url(url):
     return url
 
 
-@app.get('/ping', response_model=Response)
-async def ping():
-    return Response(status='ok', message='pong')
-
-
-@app.post('/short', response_model=UrlResponse)
-async def short_url(url_model: UrlCreate, request: Request):
-    valid_url = await construct_valid_url(url_model.url)
+async def short_url(url: str, request: Request):
+    valid_url = await construct_valid_url(url)
     hostname = urlparse(valid_url).hostname
     key = await write_record(hostname, valid_url)
 
+    return f'https://{request.url.hostname}/{key}'
+
+
+@app.post('/short', response_model=UrlResponse)
+async def short_url_api(url_model: UrlCreate, request: Request):
+    url = await short_url(url_model.url, request)
+
     return UrlResponse(
         message='🚀 created tiny url',
-        status='ok', url=f'https://{request.url.hostname}/{key}'
+        status='ok', url=url
     )
 
 

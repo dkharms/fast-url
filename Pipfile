@@ -10,6 +10,7 @@ deta = "*"
 jinja2 = "*"
 pytest = "*"
 requests = "*"
+python-multipart = "*"
 
 [dev-packages]
 

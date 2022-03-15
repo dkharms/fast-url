@@ -11,6 +11,7 @@ jinja2 = "*"
 pytest = "*"
 requests = "*"
 python-multipart = "*"
+pipfile = "*"
 
 [dev-packages]
 

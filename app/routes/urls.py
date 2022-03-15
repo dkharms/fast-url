@@ -1,12 +1,13 @@
 import hashlib
+import uuid
 
 from urllib.parse import urlparse
 
-from fastapi import HTTPException, Request, Form
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi import HTTPException, Request, Response
+from fastapi.responses import RedirectResponse
 
 from app import app
-from app.dependecies import db_urls, templates
+from app.dependecies import db_urls, db_history
 from app.schemas.url import UrlCreate, UrlResponse
 
 letter_to_digit = {
@@ -17,7 +18,7 @@ letter_to_digit = {
 }
 
 
-async def create_hash(host, url):
+def create_hash(host, url):
     host_letters = list(host)
     hash_letters = list(hashlib.md5(url.encode('utf-8')).hexdigest())
 
@@ -32,14 +33,14 @@ async def create_hash(host, url):
 
 
 async def write_record(host, url):
-    key = await create_hash(host, url)
+    key = create_hash(host, url)
     if not db_urls.get(key):
         db_urls.put(url, key)
 
     return key
 
 
-async def construct_valid_url(url):
+def construct_valid_url(url):
     parsed_url = urlparse(url)
     if not parsed_url.scheme:
         return f'https://{url}'
@@ -48,16 +49,29 @@ async def construct_valid_url(url):
 
 
 async def short_url(url: str, request: Request):
-    valid_url = await construct_valid_url(url)
+    valid_url = construct_valid_url(url)
     hostname = urlparse(valid_url).hostname
     key = await write_record(hostname, valid_url)
 
     return f'https://{request.url.hostname}/{key}'
 
 
+async def put_history_entry(user_id: str, full_url: str, shortened_url: str):
+    user_entry = db_history.get(user_id) or []
+    if user_entry:
+        user_entry = user_entry['value']
+
+    user_entry.append({full_url: shortened_url})
+    db_history.put(user_entry, user_id)
+
+
 @app.post('/short', response_model=UrlResponse)
-async def short_url_api(url_model: UrlCreate, request: Request):
+async def short_url_api(url_model: UrlCreate, request: Request, response: Response):
     url = await short_url(url_model.url, request)
+
+    user_id = request.cookies.get('user-id', str(uuid.uuid4()))
+    await put_history_entry(user_id, url_model.url, url)
+    response.set_cookie('user-id', user_id)
 
     return UrlResponse(
         message='🚀 created tiny url',

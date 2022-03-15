@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import uuid
 
 from urllib.parse import urlparse
@@ -84,6 +85,6 @@ async def redirect_to(shortened_url: str):
     full_url = db_urls.get(shortened_url)
     if not full_url:
         return HTTPException(404, f'🔴 {shortened_url} does not exist!')
-    valid_url = await construct_valid_url(full_url['value'])
+    valid_url = construct_valid_url(full_url['value'])
 
     return RedirectResponse(valid_url)

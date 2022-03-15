@@ -15,7 +15,7 @@ def parse_history_entries(history_entries: List[Dict]):
     return history_entries_array
 
 
-@app.get('/history', response_model=History)
+@app.get('/user/history', response_model=History)
 async def get_user_history(request: Request):
     history_entries = db_history.get(request.cookies.get('user-id', '-'))
 
